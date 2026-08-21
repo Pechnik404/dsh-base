@@ -1,0 +1,126 @@
+# dsh-base — базовая установка DeepSeek Harness.
+# Копируется в ~/.dsh/profiles/web/cordis.patch.yml установщиком.
+#
+# ВАЖНО: никаких токенов и абсолютных путей в этом файле.
+# Все пути разрешаются из переменных окружения на момент запуска:
+#   %USERPROFILE%  — домашняя папка пользователя (Windows)
+#   $HOME          — домашняя папка (Linux/macOS)
+# GitHub-токен берёт github-launcher.js из ~/.dsh/.credentials.yaml.
+
+# ── MCP-серверы через @deepseek-ai/dsh-mcp-client ────────────────────────────
+- insert:
+    - id: mcp-filesystem
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: filesystem
+        transport: stdio
+        command: npx
+        args: ['-y', '@modelcontextprotocol/server-filesystem', '!!js process.env.DSH_WORKSPACE ?? process.cwd()']
+        env:
+          npm_config_cache: '!!js process.env.DSH_NPM_CACHE ?? (process.env.USERPROFILE ?? process.env.HOME) + "/.npm-cache"'
+
+    - id: mcp-fetch
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: fetch
+        transport: stdio
+        command: uvx
+        args: ['mcp-server-fetch']
+        env:
+          UV_CACHE_DIR: '!!js process.env.DSH_UV_CACHE ?? (process.env.USERPROFILE ?? process.env.HOME) + "/.uv-cache"'
+          UV_TOOL_DIR: '!!js process.env.DSH_UV_TOOLS ?? (process.env.USERPROFILE ?? process.env.HOME) + "/.uv-tools"'
+          UV_TOOL_BIN_DIR: '!!js process.env.DSH_UV_BIN ?? (process.env.USERPROFILE ?? process.env.HOME) + "/.uv-bin"'
+
+    - id: mcp-memory
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: memory
+        transport: stdio
+        command: npx
+        args: ['-y', '@modelcontextprotocol/server-memory']
+        env:
+          npm_config_cache: '!!js process.env.DSH_NPM_CACHE ?? (process.env.USERPROFILE ?? process.env.HOME) + "/.npm-cache"'
+
+    - id: mcp-git
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: git
+        transport: stdio
+        command: uvx
+        args: ['mcp-server-git']
+        env:
+          UV_CACHE_DIR: '!!js process.env.DSH_UV_CACHE ?? (process.env.USERPROFILE ?? process.env.HOME) + "/.uv-cache"'
+          UV_TOOL_DIR: '!!js process.env.DSH_UV_TOOLS ?? (process.env.USERPROFILE ?? process.env.HOME) + "/.uv-tools"'
+          UV_TOOL_BIN_DIR: '!!js process.env.DSH_UV_BIN ?? (process.env.USERPROFILE ?? process.env.HOME) + "/.uv-bin"'
+
+    - id: mcp-github
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: github
+        transport: stdio
+        command: node
+        args: ['!!js (process.env.DSH_MCP_DIR ?? ((process.env.USERPROFILE ?? process.env.HOME) + "/Documents/DSH-work/_dsh_mcp")) + "/github-launcher.js"']
+        env:
+          npm_config_cache: '!!js process.env.DSH_NPM_CACHE ?? (process.env.USERPROFILE ?? process.env.HOME) + "/.npm-cache"'
+        failOnStartupError: false
+
+    - id: mcp-context7
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: context7
+        transport: stdio
+        command: npx
+        args: ['-y', '@upstash/context7-mcp']
+        env:
+          npm_config_cache: '!!js process.env.DSH_NPM_CACHE ?? (process.env.USERPROFILE ?? process.env.HOME) + "/.npm-cache"'
+
+    - id: mcp-playwright
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: playwright
+        transport: stdio
+        command: npx
+        args: ['-y', '@playwright/mcp@latest']
+        env:
+          npm_config_cache: '!!js process.env.DSH_NPM_CACHE ?? (process.env.USERPROFILE ?? process.env.HOME) + "/.npm-cache"'
+
+    # Локальный Excel (openpyxl, без облака).
+    - id: mcp-excel
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: excel
+        transport: stdio
+        command: uvx
+        args: ['excel-mcp-server', 'stdio']
+        env:
+          UV_CACHE_DIR: '!!js process.env.DSH_UV_CACHE ?? (process.env.USERPROFILE ?? process.env.HOME) + "/.uv-cache"'
+          UV_TOOL_DIR: '!!js process.env.DSH_UV_TOOLS ?? (process.env.USERPROFILE ?? process.env.HOME) + "/.uv-tools"'
+          UV_TOOL_BIN_DIR: '!!js process.env.DSH_UV_BIN ?? (process.env.USERPROFILE ?? process.env.HOME) + "/.uv-bin"'
+
+    # Локальный Word (docx, без облака).
+    - id: mcp-docx
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: docx
+        transport: stdio
+        command: npx
+        args: ['-y', '@knorq/docx-mcp-server']
+        env:
+          npm_config_cache: '!!js process.env.DSH_NPM_CACHE ?? (process.env.USERPROFILE ?? process.env.HOME) + "/.npm-cache"'
+
+# ── Vision-модель DeepSeek (скрины/изображения) ──────────────────────────────
+- id: llm-deepseek
+  config:
+    models:
+      - id: deepseek-v4-flash
+        name: DeepSeek-V4-Flash
+        contextWindow: 1000000
+      - id: deepseek-v4-pro
+        name: DeepSeek-V4-Pro
+        contextWindow: 1000000
+      - id: deepseek-v4-flash-vision-exp
+        name: DeepSeek-V4-Flash-Vision-Exp
+        contextWindow: 1000000
+        inputModalities:
+          - text
+          - image

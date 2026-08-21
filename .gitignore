@@ -1,0 +1,22 @@
+# Секреты и локальное — никогда в репозиторий
+.credentials.yaml
+.credentials.yml
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Локальные кэши/артефакты
+node_modules/
+.npm-cache/
+.uv-cache/
+.uv-tools/
+.uv-bin/
+.ms-playwright/
+*.log
+
+# Системные
+.DS_Store
+Thumbs.db
